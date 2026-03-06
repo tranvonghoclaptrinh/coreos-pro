@@ -50,31 +50,30 @@ coreos-pro/
 ```
 🚀 Cách chạy dự án
 Clone repository:
-
+```
 Bash
 git clone [https://github.com/tranvonghoclaptrinh/coreos-pro.git](https://github.com/tranvonghoclaptrinh/coreos-pro.git)
+```
 Mở tệp:
-
 Mở trực tiếp tệp index.html bằng trình duyệt.
 
 Hoặc sử dụng Extension Live Server trong VSCode để có trải nghiệm tốt nhất.
 
-[!NOTE]
-
-Dự án không yêu cầu cài đặt Backend hoặc Database. Mọi dữ liệu được lưu cục bộ trên trình duyệt của bạn.
+>[!NOTE]
+>Dự án không yêu cầu cài đặt Backend hoặc Database. Mọi dữ liệu được lưu cục bộ trên trình duyệt của bạn.
 
 🎯 Mục đích & Định hướng tương lai
 Dự án giúp luyện tập kỹ năng quản lý trạng thái (State management) bằng JavaScript thuần và thiết kế UI/UX Dashboard hiện đại.
 
 Dự kiến phát triển:
 
-[ ] Tích hợp Backend API & Cloud Storage (Firebase/Supabase).
+-[ ] Tích hợp Backend API & Cloud Storage (Firebase/Supabase).
 
-[ ] Hệ thống đăng nhập (Authentication).
+-[ ] Hệ thống đăng nhập (Authentication).
 
-[ ] Đồng bộ hóa dữ liệu đa thiết bị.
+-[ ] Đồng bộ hóa dữ liệu đa thiết bị.
 
-[ ] Nâng cấp Rich Text Editor cho phần Ghi chú.
+-[ ] Nâng cấp Rich Text Editor cho phần Ghi chú.
 
 👤 Tác giả
 Trần Hữu Vọng
