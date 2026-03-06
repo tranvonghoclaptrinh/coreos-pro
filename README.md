@@ -67,13 +67,13 @@ Dự án giúp luyện tập kỹ năng quản lý trạng thái (State manageme
 
 Dự kiến phát triển:
 
--[ ] Tích hợp Backend API & Cloud Storage (Firebase/Supabase).
+- [ ] Tích hợp Backend API & Cloud Storage (Firebase/Supabase).
 
--[ ] Hệ thống đăng nhập (Authentication).
+- [ ] Hệ thống đăng nhập (Authentication).
 
--[ ] Đồng bộ hóa dữ liệu đa thiết bị.
+- [ ] Đồng bộ hóa dữ liệu đa thiết bị.
 
--[ ] Nâng cấp Rich Text Editor cho phần Ghi chú.
+- [ ] Nâng cấp Rich Text Editor cho phần Ghi chú.
 
 👤 Tác giả
 Trần Hữu Vọng
