@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreOS Pro – Web File & Note Managern</title>
+    <!-- Thư viện Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Thư viện Mammoth.js để trích xuất văn bản từ .docx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- CSS chính -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="uploadProgress" class="upload-progress-modal">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-weight: 600; font-size: 0.9rem;">
+            <span>Đang tải tài liệu...</span>
+            <span id="uploadPercent">0%</span>
+        </div>
+        <div class="progress-bg">
+            <div id="uploadBar" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div id="uploadDetail" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">0/0 tệp tin</div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo"><i data-lucide="box"></i> <span>CORE OS</span></div>
+            <nav>
+                <ul>
+                    <li><a onclick="navigate('dashboard')" id="nav-dashboard" class="active"><i data-lucide="layout-grid"></i> <span>Tổng quan</span></a></li>
+                    <li><a onclick="navigate('explorer')" id="nav-explorer"><i data-lucide="layers"></i> <span>Tệp tin</span></a></li>
+                    <li><a onclick="navigate('notes')" id="nav-notes"><i data-lucide="file-edit"></i> <span>Ghi chú</span></a></li>
+                </ul>
+            </nav>
+            <div class="storage-container">
+                <div class="storage-info"><span>Bộ nhớ</span><span id="storage-text">0 / 100 MB</span></div>
+                <div class="progress-bg"><div id="storage-bar" class="progress-fill"></div></div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <!-- DASHBOARD -->
+<section id="dashboard" class="content-section active">
+
+<div class="dashboard-banner">
+<i data-lucide="database" class="banner-bg-icon"></i>
+
+<h1>Hệ thống quản trị dữ liệu tập trung</h1>
+
+<p>
+Chào mừng bạn quay lại. Hệ thống đã sẵn sàng để xử lý các tệp tin của bạn.
+Hãy tải lên dữ liệu mới hoặc tổ chức lại không gian lưu trữ ngay bây giờ.
+</p>
+
+<div class="banner-actions">
+
+<button class="btn-tool btn-primary" onclick="document.getElementById('fileUploadInput').click()">
+<i data-lucide="upload-cloud"></i>
+Tải lên hệ thống
+</button>
+
+<button class="btn-tool btn-glass" onclick="app.openModal('folder')">
+<i data-lucide="folder-plus"></i>
+Khởi tạo thư mục
+</button>
+
+</div>
+</div>
+
+
+<div class="dashboard-grid">
+
+
+<div class="stat-card circular-container">
+
+<h3>Dung lượng hiện tại</h3>
+
+<div class="circular-progress" id="storageCircular">
+<span class="circular-value" id="storagePercentText">0%</span>
+</div>
+
+<p id="storageDetailText">
+0.00 MB / 100.00 MB
+</p>
+
+</div>
+
+
+<div class="utility-card">
+
+<h3>Truy cập nhanh</h3>
+
+<div class="utility-grid">
+
+
+<div class="util-item" onclick="navigate('explorer')">
+
+<div class="util-icon blue">
+<i data-lucide="folder"></i>
+</div>
+
+<div>
+<div class="util-title">Toàn bộ tệp tin</div>
+<div class="util-desc">Duyệt cấu trúc cây thư mục</div>
+</div>
+
+</div>
+
+
+<div class="util-item" onclick="navigate('notes')">
+
+<div class="util-icon red">
+<i data-lucide="file-type-2"></i>
+</div>
+
+<div>
+<div class="util-title">Trình đọc Docx</div>
+<div class="util-desc">Xem nội dung văn bản</div>
+</div>
+
+</div>
+
+
+<!-- CHIA SẺ WEBSITE -->
+
+<div class="util-item" onclick="shareWebsite()">
+
+<div class="util-icon green">
+<i data-lucide="share-2"></i>
+</div>
+
+<div>
+<div class="util-title">Chia sẻ cho bạn bè</div>
+<div class="util-desc">Gửi link hệ thống</div>
+</div>
+
+</div>
+
+
+<div class="util-item" onclick="alert('Tính năng đồng bộ đang phát triển')">
+
+<div class="util-icon orange">
+<i data-lucide="refresh-cw"></i>
+</div>
+
+<div>
+<div class="util-title">Đồng bộ hóa</div>
+<div class="util-desc">Lưu trữ đám mây</div>
+</div>
+
+</div>
+
+
+</div>
+</div>
+
+</div>
+</section>
+            <!-- EXPLORER -->
+            <section id="explorer" class="content-section">
+                <div class="explorer-toolbar">
+                    <button class="btn-tool" onclick="app.openModal('folder')"><i data-lucide="folder-plus"></i> Thư mục</button>
+                    <button class="btn-tool" onclick="app.openModal('file')"><i data-lucide="plus-square"></i> Tạo .txt</button>
+                    <button class="btn-tool btn-primary" onclick="document.getElementById('fileUploadInput').click()"><i data-lucide="upload"></i> Tải lên</button>
+                    
+                    <button class="btn-danger-outline btn-trash" id="trashBin" 
+                        onclick="app.confirmDeleteSelected()"
+                        ondragover="app.handleTrashDragOver(event)" 
+                        ondragleave="app.handleTrashDragLeave(event)" 
+                        ondrop="app.handleTrashDrop(event)">
+                        <i data-lucide="trash-2"></i> Thùng rác
+                    </button>
+
+                    <input type="file" id="fileUploadInput" multiple onchange="app.handleUpload(this)" accept=".txt,.docx" style="display: none;">
+                </div>
+                <div class="pane-editor" style="margin-left: 0;">
+                    <div class="pane-header">
+                        <span id="currentPath">C:/Dữ liệu</span>
+                    </div>
+                    <div class="file-grid" id="fileGrid" ondragover="event.preventDefault()"></div>
+                </div>
+            </section>
+
+            <!-- NOTES -->
+            <section id="notes" class="content-section">
+                <div class="notes-layout">
+                    <!-- Pane List sẽ kích hoạt phóng to khi Hover -->
+                    <div class="pane-list">
+                        <div class="pane-header"><span>Tất cả ghi chú</span></div>
+                        <div id="noteList" style="overflow-y: auto; flex: 1;"></div>
+                    </div>
+                    
+                    <div class="pane-editor" id="editorPlaceholder" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <div style="text-align: center;">
+                            <i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.3; margin-bottom: 1rem;"></i>
+                            <p>Chọn một ghi chú để xem nội dung</p>
+                        </div>
+                    </div>
+                    <div class="pane-editor" id="editor" style="display: none;">
+                        <div class="editor-container">
+                            <div class="editor-toolbar">
+                                <button class="btn-tool" id="btnEdit" onclick="app.toggleEdit()"><i data-lucide="pencil"></i> Chỉnh sửa</button>
+                                <button class="btn-tool btn-primary" id="btnSave" onclick="app.saveNote()" style="display: none;"><i data-lucide="save"></i> Lưu lại</button>
+                                
+                                <button class="btn-danger-outline" style="margin-left: auto;" onclick="app.confirmDeleteActive()">
+                                    <i data-lucide="trash-2"></i> Xóa bỏ
+                                </button>
+                            </div>
+                            <input type="text" id="editTitle" placeholder="Tiêu đề tài liệu..." readonly>
+                            <textarea id="editContent" placeholder="Nội dung văn bản..." readonly></textarea>
+                            <p id="docxNote" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; display: none;">* Đây là văn bản được trích xuất từ tệp .docx</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-body">
+            <h3 id="modalTitle">Tạo mới</h3>
+            <input type="text" id="modalInput" placeholder="Nhập tên..." style="width: 100%; padding: 12px; margin: 1.5rem 0; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="btn-tool" onclick="app.closeModal()">Hủy</button>
+                <button class="btn-tool btn-primary" onclick="app.confirmModal()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal">
+        <div class="modal-body">
+            <h3 style="color: var(--danger);">Xác nhận xóa?</h3>
+            <p id="deleteMsg" style="color: var(--text-muted); margin: 1rem 0 1.5rem; font-size: 0.9rem;">Dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục lại.</p>
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="btn-tool" onclick="app.closeDeleteModal()">Hủy bỏ</button>
+                <button class="btn-tool btn-primary" style="background: var(--danger) !important;" onclick="app.executeDelete()">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="js/script.js"></script>
+</body>
+</html> 
