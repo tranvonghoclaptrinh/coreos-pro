@@ -9,7 +9,8 @@
                     { id: '2', name: 'Ghi chú.txt', type: 'file', pid: null, content: 'Nội dung mẫu...' }
                 ];
                 this.currentPid = null;
-                this.selectedId = null;
+                this.selectedIds = new Set();
+                this.lastSelectedIndex = null;
                 this.activeNoteId = null;
                 this.draggedId = null;
                 this.isEditing = false;
@@ -119,7 +120,7 @@ updateStorage() {
 
             createFileElement(item) {
                 const div = document.createElement('div');
-                div.className = `file-item ${this.selectedId === item.id ? 'selected' : ''}`;
+                div.className = `file-item ${this.selectedIds.has(item.id) ? 'selected' : ''}`;
                 if (item.type !== 'back') {
                     div.draggable = true;
                     div.ondragstart = (e) => { this.draggedId = item.id; e.dataTransfer.setData('text/plain', item.id); };
@@ -134,9 +135,55 @@ updateStorage() {
                 const icon = item.type === 'folder' ? 'folder' : (item.type === 'back' ? 'corner-left-up' : 'file-text');
                 const iconClass = item.type === 'folder' ? 'file-folder' : (isDoc ? 'file-office' : 'file-doc');
                 div.innerHTML = `<i data-lucide="${icon}" class="${iconClass}"></i><span class="file-name">${item.name}</span>`;
-                div.onclick = () => { if (item.type === 'back') return; this.selectedId = item.id; this.renderGrid(); };
+                div.onclick = (e) => {
+
+                    if (item.type === 'back') return;
+
+                    const visibleItems = this.items.filter(i => i.pid === this.currentPid);
+                    const index = visibleItems.findIndex(i => i.id === item.id);
+
+                    // SHIFT + CLICK
+                    if (e.shiftKey && this.lastSelectedIndex !== null) {
+
+                        const start = Math.min(this.lastSelectedIndex, index);
+                        const end = Math.max(this.lastSelectedIndex, index);
+
+                        this.selectedIds.clear();
+
+                        for (let i = start; i <= end; i++) {
+                            this.selectedIds.add(visibleItems[i].id);
+                        }
+
+                    }
+
+                    // CTRL + CLICK
+                    else if (e.ctrlKey) {
+
+                        if (this.selectedIds.has(item.id)) {
+                            this.selectedIds.delete(item.id);
+                        } else {
+                            this.selectedIds.add(item.id);
+                        }
+
+                        this.lastSelectedIndex = index;
+                    }
+
+                    // CLICK BÌNH THƯỜNG
+                    else {
+
+                        this.selectedIds.clear();
+                        this.selectedIds.add(item.id);
+                        this.lastSelectedIndex = index;
+
+                    }
+
+                    this.renderGrid();
+                };
                 div.ondblclick = () => {
-                    if (item.type === 'folder') { this.currentPid = item.id; this.selectedId = null; this.renderGrid(); }
+                    if (item.type === 'folder') { 
+                            this.currentPid = item.id; 
+                            this.selectedIds.clear(); 
+                            this.renderGrid(); }
                     else if (item.type === 'back') { this.currentPid = this.getParentPid(); this.renderGrid(); }
                     else { this.openNote(item.id); }
                 };
@@ -207,10 +254,25 @@ updateStorage() {
             }
 
             confirmDeleteSelected() {
-                if (!this.selectedId) return;
-                this.deleteTargetId = this.selectedId;
-                const item = this.items.find(i => i.id === this.selectedId);
-                document.getElementById('deleteMsg').innerText = `Xác nhận xóa tệp "${item.name}"?`;
+
+                if (!this.selectedIds || this.selectedIds.size === 0) return;
+
+                this.deleteTargetIds = Array.from(this.selectedIds);
+
+                if (this.deleteTargetIds.length === 1) {
+
+                    const item = this.items.find(i => i.id === this.deleteTargetIds[0]);
+
+                    document.getElementById('deleteMsg').innerText =
+                        `Xác nhận xóa tệp "${item.name}"?`;
+
+                } else {
+
+                    document.getElementById('deleteMsg').innerText =
+                        `Xác nhận xóa ${this.deleteTargetIds.length} tệp đã chọn?`;
+
+                }
+
                 this.confirmDelete();
             }
 
@@ -224,20 +286,34 @@ updateStorage() {
             confirmDelete() { document.getElementById('deleteModal').classList.add('active'); }
             closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
             executeDelete() {
-                if (!this.deleteTargetId) return;
+
+                if (!this.deleteTargetIds || this.deleteTargetIds.length === 0) return;
+
                 const deleteRecursive = (id) => {
-                    this.items.filter(i => i.pid === id).forEach(c => deleteRecursive(c.id));
+                    this.items
+                        .filter(i => i.pid === id)
+                        .forEach(c => deleteRecursive(c.id));
+
                     this.items = this.items.filter(i => i.id !== id);
                 };
-                deleteRecursive(this.deleteTargetId);
-                if (this.deleteTargetId === this.activeNoteId) {
-                    this.activeNoteId = null;
-                    document.getElementById('editor').style.display = 'none';
-                    document.getElementById('editorPlaceholder').style.display = 'flex';
-                }
-                this.selectedId = null;
+
+                this.deleteTargetIds.forEach(id => {
+
+                    deleteRecursive(id);
+
+                    if (id === this.activeNoteId) {
+                        this.activeNoteId = null;
+                        document.getElementById('editor').style.display = 'none';
+                        document.getElementById('editorPlaceholder').style.display = 'flex';
+                    }
+
+                });
+
+                this.selectedIds.clear();
+
                 this.closeDeleteModal();
-                this.save(); this.renderAll();
+                this.save();
+                this.renderAll();
             }
 
             openModal(type) { this.modalType = type; document.getElementById('modal').classList.add('active'); }
